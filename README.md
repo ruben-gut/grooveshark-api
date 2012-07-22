@@ -3,12 +3,19 @@ xGSharkAPI
 
 Unofficial Grooveshark API for Python
 
-= TODO
+KNOWN ISSUES
+============
+* Trying to download songs too often might get you banned from Grooveshark
+for a couple of hours
+
+TODO
+====
 * Add documentation
 * Add code to actually download songs
 * Maybe base its design in official JSQueue and HTMLShark
 
-= Credits
+Credits
+=======
 Ported from Ruby and modified by:
 * Tirino - http://github.com/tirino
 

@@ -17,7 +17,7 @@ from grooveshark import utils
 
 SESSION_END_POINT = 'grooveshark.com'
 
-MAX_CLOSE_URL_REQUESTS = 3
+MAX_CLOSE_URL_REQUESTS = 2
 WAIT_BETWEEN_URL_REQUESTS = 60 # seconds
 
 class Client(Request):
