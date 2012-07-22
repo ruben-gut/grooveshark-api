@@ -5,6 +5,8 @@ Unofficial Grooveshark API for Python
 
 = TODO
 * Add documentation
+* Add code to actually download songs
+* Maybe base its design in official JSQueue and HTMLShark
 
 = Credits
 Ported from Ruby and modified by:
