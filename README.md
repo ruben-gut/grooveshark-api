@@ -6,12 +6,11 @@ Unofficial Grooveshark API for Python
 KNOWN ISSUES
 ============
 * Trying to download songs too often might get you banned from Grooveshark
-for a couple of hours
+for a few hours
 
 TODO
 ====
 * Add documentation
-* Add code to actually download songs
 * Maybe base its design in official JSQueue and HTMLShark
 
 Credits
