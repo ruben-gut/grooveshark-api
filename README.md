@@ -1,5 +1,5 @@
-xGSharkAPI
-==========
+grooveshark-api
+===============
 
 Unofficial Grooveshark API for Python
 
