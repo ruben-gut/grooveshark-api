@@ -1,5 +1,5 @@
 """
-Grooveshark Client interface
+Grooveshark User model and interface
 """
 __author__ = "Tirino"
 
@@ -70,6 +70,7 @@ class User(object):
     )
   
   def library_ts_modified(self):
+    """Get library modification time"""
     return self.client.request('userGetLibraryTSModified', 
       {'userID': self.id}
     )

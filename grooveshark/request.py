@@ -7,9 +7,9 @@ import gzip
 import hashlib
 import httplib
 try:
-  import json
-except:
   import simplejson as json
+except ImportError:
+  import json
 import StringIO
 import time
 import uuid
@@ -36,14 +36,16 @@ class Request(object):
     self.comm_token_ttl = None
     self.debug = False
   
-  def _init_comm_token(self):
-    """Get communication token"""
+  def _build_comm_token(self):
+    """Get and assign communication token"""
+    self.comm_token = None # cleanup or we'll be in trouble
     self.comm_token = self.request('getCommunicationToken', 
       {'secretKey': hashlib.md5(self.session).hexdigest()}, True
     )
     self.comm_token_ttl = int(time.time())
  
   def request(self, method, params={}, secure=False):
+    """Perform API request"""
     if self.comm_token:
       self.refresh_token()
 
@@ -107,6 +109,7 @@ class Request(object):
       return data['result']
 
   def refresh_token(self):
+    """Refresh communications token if TTL has passed"""
     if ((time.time() - self.comm_token_ttl) > TOKEN_TTL):
-      self._init_comm_token()
+      self._build_comm_token()
 

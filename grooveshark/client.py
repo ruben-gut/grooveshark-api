@@ -9,9 +9,11 @@ import random
 import re
 import time
 
-from grooveshark.request import Request, COUNTRY, USER_AGENT, SALT, METHOD_SALTS
-from grooveshark.user import User
 from grooveshark.model import Song, Playlist
+from grooveshark.request import Request, SALT, METHOD_SALTS
+from grooveshark.request import REFERER, USER_AGENT, COUNTRY
+from grooveshark.user import User
+from grooveshark import utils
 
 SESSION_END_POINT = 'grooveshark.com'
 
@@ -25,8 +27,7 @@ class Client(Request):
     self.session = session or self._get_session()
     self.last_song_url_request = 0
     self.close_song_url_requests = 0
-
-    self._init_comm_token()
+    self._build_comm_token()
   
   def _get_session(self):
     """Obtain new session from Grooveshark"""
@@ -138,11 +139,10 @@ class Client(Request):
   def get_song_url_by_id(self, song_id):
     """Get song stream url by ID"""
     resp = self.get_stream_auth_by_song_id(song_id)
-    data = {}
-    for key in resp.keys():
-      data = resp[key]
-    
-    if not data:
+    song_id = str(song_id)
+    if song_id in resp and resp[song_id]:
+      data = resp[song_id]
+    else:
       raise Exception('Uh-oh! Received empty data!')
     
     return "http://%s/stream.php?streamKey=%s" % (
@@ -152,5 +152,10 @@ class Client(Request):
   def get_song_url(self, song):
     """Get song stream"""
     return self.get_song_url_by_id(song.id)
-
+  
+  def download_song(self, song, output_folder='./'):
+    """Download a song to a specific folder or the current one (default)"""
+    headers = {'User-Agent': USER_AGENT, 'Referer': REFERER}
+    output = '%s%s - %s.mp3' % (output_folder, song.artist, song.name)
+    return utils.download_file(self.get_song_url(song), output, headers)
 

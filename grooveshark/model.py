@@ -1,5 +1,5 @@
 """
-Grooveshark Client interface
+Grooveshark models
 """
 __author__ = "Tirino"
 
@@ -44,7 +44,7 @@ class Song(object):
     return 'http://images.grooveshark.com/static/albums/%s_%s' % (size, self.artwork)
   
   def __str__(self):
-    return ' - '.join([self.id, self.name, self.artist])
+    return ' - '.join([str(self.id), self.name, self.artist])
   
   def to_dict(self):
     return {
@@ -97,5 +97,5 @@ class Playlist(object):
     return self.client.request('deletePlaylist', {'playlistID': self.id, 'name': self.name})
 
   def __str__(self):
-    return ' - '.join([self.id, self.name, '%s songs' % len(self.songs)])
+    return ' - '.join([str(self.id), self.name, '%s songs' % len(self.songs)])
 

@@ -21,10 +21,12 @@ def test_api(username, password):
   user = client.login(username, password)
   playlists = user.get_playlists()
   playlists[0].load_songs()
-  for song in playlists[0].songs:
-    print song
-    #print client.get_song_url(song)
-  favorites = user.get_favorites()
-  for song in favorites:
-    print song
+  song = playlists[0].songs[0]
+  print song
+  #for song in playlists[0].songs:
+  #  print song
+  #  #print client.get_song_url(song)
+  #favorites = user.get_favorites()
+  #for song in favorites:
+  #  print song
   return user
