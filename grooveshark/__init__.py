@@ -8,13 +8,23 @@ Inspired and based on work by:
 """
 __author__ = "Tirino"
 
-def cli_test(username, password):
+def test_api(username, password):
+  """
+  Test some of the methods of the API
+  
+  Your user should have at least 1 playlist
+  and, ideally, some favorites
+  """
   from grooveshark.client import Client
   client = Client()
   client.debug = True
   user = client.login(username, password)
   playlists = user.get_playlists()
-  for song in playlists[0].load_songs():
+  playlists[0].load_songs()
+  for song in playlists[0].songs:
     print song
-    print client.get_song_url(song)
+    #print client.get_song_url(song)
+  favorites = user.get_favorites()
+  for song in favorites:
+    print song
   return user

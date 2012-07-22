@@ -82,12 +82,17 @@ class Request(object):
         print ">> Request Headers: %s" % headers
         print ">> Request Parameters: %s" % body
       
-      conn.request('POST', '/more.php?%s' % method, json.dumps(body), headers=headers)
+      conn.request(
+        'POST', '/more.php?%s' % method, 
+        json.dumps(body), headers=headers
+      )
       resp = conn.getresponse()
     except Exception, ex:
       raise Exception('Could not make request: %s' % str(ex))
     
-    resp_data = gzip.GzipFile(fileobj=(StringIO.StringIO(resp.read()))).read()
+    resp_data = gzip.GzipFile(
+      fileobj=(StringIO.StringIO(resp.read()))
+    ).read()
     
     if self.debug:
       print "<< Response Headers: %s" % resp.getheaders()

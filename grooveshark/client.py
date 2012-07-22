@@ -33,7 +33,10 @@ class Client(Request):
     conn = httplib.HTTPConnection(SESSION_END_POINT) 
     conn.request('HEAD', '', headers={'User-Agent': USER_AGENT}) 
     resp = conn.getresponse()
-    match = re.search('PHPSESSID=([a-z\d]{32});', resp.getheader("set-cookie"))
+    match = re.search(
+      'PHPSESSID=([a-z\d]{32});', 
+      resp.getheader("set-cookie")
+    )
     return match.group(1)
    
   def _create_token(self, method):
@@ -77,14 +80,16 @@ class Client(Request):
     if type_ not in ['daily', 'monthly']:
       raise Exception('Invalid type: %s' % type_)
     else:
-      songs = self.request('popularGetSongs', {'type': type_})['songs']
-      for song in songs:
+      result = self.request('popularGetSongs', {'type': type_})
+      for song in result['songs']:
         yield Song(song)
   
   def search(self, type_, query):
     """Perform search request for query"""
-    songs = self.request('getSearchResults', {'type': type_, 'query': query})['songs']
-    for song in songs:
+    result = self.request('getSearchResults', 
+      {'type': type_, 'query': query}
+    )
+    for song in result['songs']:
       yield Song(song)
   
   def search_songs(self, query):
@@ -93,7 +98,9 @@ class Client(Request):
   
   def search_songs_pure(self, query):
     """Return raw response for songs search request"""
-    return self.request('getSearchResultsEx', {'type': 'Songs', 'query': query})
+    return self.request('getSearchResultsEx', 
+      {'type': 'Songs', 'query': query}
+    )
   
   def get_stream_auth_by_song_id(self, song_id):
     """Get stream authentication by song ID"""
@@ -106,7 +113,7 @@ class Client(Request):
     if (self.close_song_url_requests > MAX_CLOSE_URL_REQUESTS):
       if (self.last_song_url_request + WAIT_BETWEEN_URL_REQUESTS < now):
         raise Exception('You cannot make URL requests that often! ' \
-                        'Grooveshark will notice something fishy.')
+                        'Grooveshark will notice something\'s not right.')
       else: # we're good, enough time has passed, let's clean up
         self.close_song_url_requests = 1
         self.last_song_url_request = now
@@ -137,7 +144,10 @@ class Client(Request):
     
     if not data:
       raise Exception('Uh-oh! Received empty data!')
-    return "http://%s/stream.php?streamKey=%s" % (data['ip'], data['streamKey'])
+    
+    return "http://%s/stream.php?streamKey=%s" % (
+      data['ip'], data['streamKey']
+    )
   
   def get_song_url(self, song):
     """Get song stream"""

@@ -9,7 +9,10 @@ class Song(object):
     if data:
       self.id = data['SongID']
       self.name = data['Name']
-      self.name_id = data['SongNameID']
+      if 'SongNameID' in data:
+        self.name_id = data['SongNameID']
+      else:
+        self.name_id = None
       self.artist = data['ArtistName']
       self.artist_id = data['ArtistID']
       self.album = data['AlbumName']
@@ -18,7 +21,10 @@ class Song(object):
       self.duration = data['EstimateDuration']
       self.artwork = data['CoverArtFilename']
       self.popularity = data['Popularity']
-      self.year = data['Year']
+      if 'Year' in data:
+        self.year = data['Year']
+      else:
+        self.year = None
     else:
       self.id = None
       self.name = None
@@ -32,6 +38,10 @@ class Song(object):
       self.artwork = None
       self.popularity = None
       self.year = None
+  
+  def get_artwork_url(self, tiny=False):
+    size = '70' if tiny else '90'
+    return 'http://images.grooveshark.com/static/albums/%s_%s' % (size, self.artwork)
   
   def __str__(self):
     return ' - '.join([self.id, self.name, self.artist])
@@ -69,7 +79,7 @@ class Playlist(object):
     """Fetch playlist songs"""
     songs = self.client.request('playlistGetSongs', {'playlistID': self.id})['Songs']
     for song in songs:
-      yield Song(song)
+      self.songs.append(Song(song))
   
   def rename(self, name, description):
     """Rename this playlist"""

@@ -39,14 +39,18 @@ class User(object):
     """Get user activity for the date (Comes as RAW response)"""
     if not date:
       date = datetime.datetime.now()
-    return self.client.request('getProcessedUserFeedData', {'userID': self.id, 'day': date.strftime("%Y%m%d")})
+    return self.client.request('getProcessedUserFeedData', 
+      {'userID': self.id, 'day': date.strftime("%Y%m%d")}
+    )
   
   # User Library #
   
   def get_library(self, page=0):
     """Fetch songs from library"""
-    songs = self.client.request('userGetSongsInLibrary', {'userID': self.id, 'page': str(page)})['songs']
-    for song in songs:
+    result = self.client.request('userGetSongsInLibrary', 
+      {'userID': self.id, 'page': str(page)}
+    )['songs']
+    for song in result['songs']:
       yield Song(song)
   
   def library_add(self, songs=[]):
@@ -54,25 +58,34 @@ class User(object):
     songs_data = []
     for song in songs:
       songs_data.append(song.to_dict())
-    return self.client.request('userAddSongsToLibrary', {'songs': songs_data})
+    return self.client.request('userAddSongsToLibrary', 
+      {'songs': songs_data}
+    )
   
   def library_remove(self, song):
     """Remove song from library"""
     return self.client.request('userRemoveSongFromLibrary', 
-      {'userID': self.id, 'songID': song.id, 'albumID': song.album_id, 'artistID': song.artist_id}
+      {'userID': self.id, 'songID': song.id, 
+      'albumID': song.album_id, 'artistID': song.artist_id}
     )
   
   def library_ts_modified(self):
-    return self.client.request('userGetLibraryTSModified', {'userID': self.id})
+    return self.client.request('userGetLibraryTSModified', 
+      {'userID': self.id}
+    )
   
   # User Playlists #
   
   def get_playlists(self):
     """Fetch user playlists"""
     if not self.playlists:
-      results = self.client.request('userGetPlaylists', {'userID': self.id})['Playlists']
-      for playlist in results:
-        self.playlists.append(Playlist(self.client, playlist, self.id))
+      result = self.client.request('userGetPlaylists', 
+        {'userID': self.id}
+      )
+      for playlist in result['Playlists']:
+        self.playlists.append(
+          Playlist(self.client, playlist, self.id)
+        )
     return self.playlists
   
   def get_playlist(self, playlist_id):
@@ -104,18 +117,24 @@ class User(object):
   def get_favorites(self):
     """Get user favorites"""
     if not self.favorites:
-      results = self.client.request('getFavorites', {'ofWhat': 'Songs', 'userID': self.id})
-      for song in results:
+      songs = self.client.request('getFavorites', 
+        {'ofWhat': 'Songs', 'userID': self.id}
+      )
+      for song in songs:
         self.favorites.append(Song(song))
     return self.favorites
   
   def add_favorite(self, song):
     """Add song to favorites"""
     song_id = song.id if isinstance(song, Song) else str(song)
-    return self.client.request('favorite', {'what': 'Song', 'ID': song_id})
+    return self.client.request('favorite', 
+      {'what': 'Song', 'ID': song_id}
+    )
   
   def remove_favorite(self, song):
     """Remove song from favorites"""
     song_id = song.id if isinstance(song, Song) else str(song)
-    return self.client.request('unfavorite', {'what': 'Song', 'ID': song_id})
+    return self.client.request('unfavorite', 
+      {'what': 'Song', 'ID': song_id}
+    )
 
