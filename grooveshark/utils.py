@@ -7,7 +7,7 @@ import urllib2
 
 DOWNLOAD_CHUNK = 512 * 1024
 
-def download_file(url, filename, headers={}, data=None):
+def download_file(url, filename, headers={}, data=None, progress=False):
   request = urllib2.Request(url, data, headers)
   source = urllib2.urlopen(request)
   
@@ -24,8 +24,7 @@ def download_file(url, filename, headers={}, data=None):
         break
       downloaded += len(chunk)
       dest.write(chunk)
-      if total_size:
-        # print progress
-        print '%s%' int((float(downloaded) / float(total_size)) * 100)
+      if (progress and total_size):
+        print '%s%%' % int((float(downloaded) / float(total_size)) * 100)
   return True
 
