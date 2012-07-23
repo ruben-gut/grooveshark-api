@@ -32,10 +32,10 @@ METHOD_SALTS = {'getStreamKeysFromSongIDs': ':bangersAndMash:'}
 
 class Request(object):
   def __init__(self):
+    self.debug = False
     self.comm_token = None
     self.comm_token_ttl = None
-    self.debug = False
-  
+ 
   def _build_comm_token(self):
     """Get and assign communication token"""
     self.comm_token = None # cleanup or we'll be in trouble

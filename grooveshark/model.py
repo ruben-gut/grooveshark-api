@@ -19,7 +19,10 @@ class Song(object):
       self.album_id = data['AlbumID']
       self.track = data['TrackNum']
       self.duration = data['EstimateDuration']
-      self.artwork = data['CoverArtFilename']
+      if 'CoverArtFilename' in data:
+        self.artwork = data['CoverArtFilename']
+      else:
+        self.artwork = None
       self.popularity = data['Popularity']
       if 'Year' in data:
         self.year = data['Year']
@@ -39,9 +42,15 @@ class Song(object):
       self.popularity = None
       self.year = None
   
-  def get_artwork_url(self, tiny=False):
-    size = '70' if tiny else '90'
-    return 'http://images.grooveshark.com/static/albums/%s_%s' % (size, self.artwork)
+  def get_artwork_url(self, size='500'):
+    """
+    Return the URL for the song artwork.
+    Possible size values are: 30, 50, 70, 90, 200 and 500
+    """
+    if self.artwork:
+      return 'http://images.grooveshark.com/static/albums/%s_%s' % (size, self.artwork)
+    else:
+      return None
   
   def __str__(self):
     return ' - '.join([str(self.id), self.name, self.artist])
@@ -62,6 +71,8 @@ class Playlist(object):
     self.client = client
     self.data = data
     self.songs = []
+    self.songs_loaded = False
+  
     if data:
       self.id = data['PlaylistID']
       self.name = data['Name']
@@ -80,6 +91,7 @@ class Playlist(object):
     songs = self.client.request('playlistGetSongs', {'playlistID': self.id})['Songs']
     for song in songs:
       self.songs.append(Song(song))
+    self.songs_loaded = True
   
   def rename(self, name, description):
     """Rename this playlist"""
@@ -97,5 +109,6 @@ class Playlist(object):
     return self.client.request('deletePlaylist', {'playlistID': self.id, 'name': self.name})
 
   def __str__(self):
-    return ' - '.join([str(self.id), self.name, '%s songs' % len(self.songs)])
+    songs = '%s songs' % len(self.songs) if self.songs_loaded else ''
+    return ' - '.join([str(self.id), self.name, songs])
 

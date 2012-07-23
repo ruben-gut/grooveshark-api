@@ -15,10 +15,9 @@ from grooveshark.request import REFERER, USER_AGENT, COUNTRY
 from grooveshark.user import User
 from grooveshark import utils
 
-SESSION_END_POINT = 'grooveshark.com'
+SESSION_ENDPOINT = 'grooveshark.com'
 
-MAX_CLOSE_URL_REQUESTS = 2
-WAIT_BETWEEN_URL_REQUESTS = 60 # seconds
+WAIT_BETWEEN_URL_REQUESTS = 20 # seconds
 
 class Client(Request):
   def __init__(self, session=None):
@@ -26,12 +25,11 @@ class Client(Request):
     self.user = None
     self.session = session or self._get_session()
     self.last_song_url_request = 0
-    self.close_song_url_requests = 0
     self._build_comm_token()
   
   def _get_session(self):
     """Obtain new session from Grooveshark"""
-    conn = httplib.HTTPConnection(SESSION_END_POINT) 
+    conn = httplib.HTTPConnection(SESSION_ENDPOINT) 
     conn.request('HEAD', '', headers={'User-Agent': USER_AGENT}) 
     resp = conn.getresponse()
     match = re.search(
@@ -103,59 +101,66 @@ class Client(Request):
       {'type': 'Songs', 'query': query}
     )
   
-  def get_stream_auth_by_song_id(self, song_id):
+  def _get_stream_auth_by_id(self, song_id):
     """Get stream authentication by song ID"""
     now = time.time()
     if not self.last_song_url_request: # first request
-      self.close_song_url_requests = 1
-    else:
-      self.close_song_url_requests = self.close_song_url_requests + 1
-    
-    if (self.close_song_url_requests > MAX_CLOSE_URL_REQUESTS):
-      if (self.last_song_url_request + WAIT_BETWEEN_URL_REQUESTS < now):
-        raise Exception('You cannot make URL requests that often! ' \
-                        'Grooveshark will notice something\'s not right.')
-      else: # we're good, enough time has passed, let's clean up
-        self.close_song_url_requests = 1
-        self.last_song_url_request = now
-    else: # we're good
-      # check if we can reset the counter
-      if (self.last_song_url_request + WAIT_BETWEEN_URL_REQUESTS > now):
-         # enough time has passed since the last request, let's clean up
-         self.close_song_url_requests = 1
       self.last_song_url_request = now
+    else:
+      if ((self.last_song_url_request + WAIT_BETWEEN_URL_REQUESTS) > now):
+        # we need to sleep or Grooveshark will ban us
+        wait_time = ((self.last_song_url_request + WAIT_BETWEEN_URL_REQUESTS) - now)
+        if self.debug:
+          print "Sleeping for %s seconds..." % wait_time
+        time.sleep(wait_time)
+      else:
+        self.last_song_url_request = now
     
-    return self.request('getStreamKeysFromSongIDs', {
+    result = self.request('getStreamKeysFromSongIDs', {
       'mobile': 'false',
       'prefetch': 'false',
       'songIDs': song_id,
       'country': COUNTRY
     })
-  
-  def get_stream_auth(self, song):
-    """Get stream authentication for song object"""
-    return self.get_stream_auth_by_song_id(song.id)
-  
-  def get_song_url_by_id(self, song_id):
-    """Get song stream url by ID"""
-    resp = self.get_stream_auth_by_song_id(song_id)
-    song_id = str(song_id)
-    if song_id in resp and resp[song_id]:
-      data = resp[song_id]
+    if song_id in result and result[song_id]:
+      return result[song_id]
     else:
       raise Exception('Uh-oh! Received empty data!')
-    
+  
+  def _get_stream_auth(self, song):
+    """Get stream authentication for song object"""
+    return self._get_stream_auth_by_id(song.id)
+  
+  def _get_song_url_by_id(self, song_id, data):
+    """Get song stream url by ID"""
     return "http://%s/stream.php?streamKey=%s" % (
       data['ip'], data['streamKey']
     )
   
-  def get_song_url(self, song):
+  def _get_song_url(self, song, data):
     """Get song stream"""
-    return self.get_song_url_by_id(song.id)
+    return self._get_song_url_by_id(song.id, data)
+  
+  def mark_song_as_downloaded(self, song, data):
+    raise Exception('Incompatible with this version of API. (needs newer version)')
+    """Mark a song as downloaded"""
+    # call: markSongDownloadedEx
+    # params: { streamKey: b.get("streamKey"), streamServerID: b.get("streamServerID"), songID: b.id }
+ 
+    return self.request(' markSongDownloadedEx', 
+      {'streamKey': data['streamKey'], 'streamServerID': data['streamServerID'], 'songID': song.id}
+    )
+  
+  def download_song_to(self, song, file_pointer):
+    """Download a song to a specific folder or the current one (default)"""
+    headers = {'User-Agent': USER_AGENT, 'Referer': REFERER}
+    data = self._get_stream_auth(song)
+    utils.download_file(self._get_song_url(song, data), file_pointer, headers, progress=self.debug)
+    return True
   
   def download_song(self, song, output_folder='./'):
     """Download a song to a specific folder or the current one (default)"""
-    headers = {'User-Agent': USER_AGENT, 'Referer': REFERER}
-    output = '%s%s - %s.mp3' % (output_folder, song.artist, song.name)
-    return utils.download_file(self.get_song_url(song), output, headers)
+    filename = '%s%s - %s.mp3' % (output_folder, song.artist, song.name)
+    output = open(filename, 'wb')
+    return self.download_song_to(song, output)
 

@@ -25,7 +25,6 @@ def test_api(username, password):
   print song
   #for song in playlists[0].songs:
   #  print song
-  #  #print client.get_song_url(song)
   #favorites = user.get_favorites()
   #for song in favorites:
   #  print song

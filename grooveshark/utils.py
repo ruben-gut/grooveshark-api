@@ -1,3 +1,4 @@
+from __future__ import with_statement
 """
 Grooveshark utility functions
 """
@@ -7,7 +8,7 @@ import urllib2
 
 DOWNLOAD_CHUNK = 512 * 1024
 
-def download_file(url, filename, headers={}, data=None, progress=False):
+def download_file(url, file_pointer, headers={}, data=None, progress=False):
   request = urllib2.Request(url, data, headers)
   source = urllib2.urlopen(request)
   
@@ -17,7 +18,7 @@ def download_file(url, filename, headers={}, data=None, progress=False):
   if content_length:
     total_size = int(content_length.strip())
   
-  with open(filename, 'wb') as dest:
+  with file_pointer as dest:
     while True:
       chunk = source.read(DOWNLOAD_CHUNK)
       if not chunk:

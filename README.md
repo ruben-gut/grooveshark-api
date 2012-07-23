@@ -3,11 +3,6 @@ grooveshark-api
 
 Unofficial Grooveshark API for Python
 
-KNOWN ISSUES
-============
-* Trying to download songs too often might get you banned from Grooveshark
-for a few hours
-
 TODO
 ====
 * Add documentation
@@ -15,7 +10,7 @@ TODO
 
 Credits
 =======
-Ported from Ruby and modified by:
+Author:
 * Tirino - http://github.com/tirino
 
 Inspired and based on work by:
